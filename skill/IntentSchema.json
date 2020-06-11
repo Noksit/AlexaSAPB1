@@ -1,0 +1,276 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "work well",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "SayHello",
+          "slots": [
+            {
+              "name": "FirstName",
+              "type": "AMAZON.FirstName"
+            }
+          ],
+          "samples": [
+            "Salue notre ami {FirstName}",
+            "Dit bonjour a {FirstName}"
+          ]
+        },
+        {
+          "name": "MakePurchase",
+          "slots": [
+            {
+              "name": "ItemName",
+              "type": "SAP_ITEMS"
+            },
+            {
+              "name": "Quantity",
+              "type": "AMAZON.NUMBER"
+            },
+            {
+              "name": "ItemRecom",
+              "type": "SAP_ITEMS"
+            }
+          ],
+          "samples": [
+            "j'ai besoin de fournitures",
+            "achete moi des fournitures",
+            "donne moi des fournitures",
+            "je dois acheter des trucs",
+            "achat",
+            "je dois passer commander",
+            "{ItemName}",
+            "achete moi {ItemName}",
+            "achete moi {Quantity} unité de {ItemName}",
+            "achete {Quantity}  {ItemName}",
+            "{Quantity} unités",
+            "{Quantity}",
+            "{Quantity} pack",
+            "{Quantity} packs",
+            "prend moi aussi {ItemRecom}",
+            "{ItemRecom} sera tres bien",
+            "tu peux ajouter {ItemRecom} a cette commande",
+            "{ItemRecom} et ce sera bon"
+          ]
+        },
+        {
+          "name": "GetPhoneNumber",
+          "slots": [
+            {
+              "name": "Partner",
+              "type": "SAP_PARTNER"
+            }
+          ],
+          "samples": [
+            "donne moi le numero de {Partner}",
+            "j'ai besoin d'un numero de telephone",
+            "donne moi un numero",
+            "donne moi un numero de telephone",
+            "j'ai besoin d'un numero",
+            "je dois appeler un client",
+            "je dois appeler {Partner}",
+            "passer un coup de fil",
+            "passer un coup de telephone",
+            "telephoner a {Partner}"
+          ]
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        }
+      ],
+      "types": [
+        {
+          "name": "SAP_PARTNER",
+          "values": [
+            {
+              "id": "C200001",
+              "name": {
+                "value": "hexagone mobile",
+                "synonyms": [
+                  "hexa",
+                  "Hexagone"
+                ]
+              }
+            },
+            {
+              "id": "C200002",
+              "name": {
+                "value": "back market",
+                "synonyms": [
+                  "market",
+                  "back market",
+                  "back"
+                ]
+              }
+            },
+            {
+              "id": "C200003",
+              "name": {
+                "value": "amazon",
+                "synonyms": [
+                  "amazon"
+                ]
+              }
+            },
+            {
+              "id": "F200002",
+              "name": {
+                "value": "gazelles ecotm",
+                "synonyms": [
+                  "eco T.M.",
+                  "gazelle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SAP_ITEMS",
+          "values": [
+            {
+              "id": "IP516ARG-A",
+              "name": {
+                "value": "iPhone 5 16go argent A"
+              }
+            },
+            {
+              "id": "IP516ARG-A+",
+              "name": {
+                "value": "iPhone 5 16go argent A+"
+              }
+            },
+            {
+              "id": "1+364GR-A",
+              "name": {
+                "value": "One plus 3 gris A"
+              }
+            },
+            {
+              "id": "IP5C16GR-A",
+              "name": {
+                "value": "Iphone 6+ 16 gris A"
+              }
+            },
+            {
+              "id": "R58K30YB61H",
+              "name": {
+                "value": "Samsung G960F/DS"
+              }
+            },
+            {
+              "id": "1+364GR-A+",
+              "name": {
+                "value": "One plus 3 gris A+"
+              }
+            },
+            {
+              "id": "1+364GR-B",
+              "name": {
+                "value": "One plus 3 gris B"
+              }
+            },
+            {
+              "id": "1+364GR-C",
+              "name": {
+                "value": "One plus 3 gris C"
+              }
+            },
+            {
+              "id": "1+364GR-D",
+              "name": {
+                "value": "One plus 3 gris D"
+              }
+            },
+            {
+              "id": "1+364GR-E",
+              "name": {
+                "value": "One plus 3 gris E"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-A",
+              "name": {
+                "value": "One plus 3T noir A"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-A+",
+              "name": {
+                "value": "One plus 3T noir A+"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-B",
+              "name": {
+                "value": "One plus 3T noir B"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-C",
+              "name": {
+                "value": "One plus 3T noir C"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-D",
+              "name": {
+                "value": "One plus 3T noir D"
+              }
+            },
+            {
+              "id": "1+3T128NOIR-E",
+              "name": {
+                "value": "One plus 3T noir E"
+              }
+            },
+            {
+              "id": "1+564GR-A",
+              "name": {
+                "value": "One plus 5 gris A"
+              }
+            },
+            {
+              "id": "1+564GR-A+",
+              "name": {
+                "value": "One plus 5 gris A+"
+              }
+            },
+            {
+              "id": "1+564GR-B",
+              "name": {
+                "value": "One plus 5 gris B"
+              }
+            },
+            {
+              "id": "1+564GR-C",
+              "name": {
+                "value": "One plus 5 gris C"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
