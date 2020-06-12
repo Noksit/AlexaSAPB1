@@ -8,13 +8,16 @@ const moment = require('moment') // Date Time manipulation
 
 // Set export functions
 module.exports = {
-    GetPhoneNumber:  function(partnerCode, callback){
+    GetCommercialInformations: function (document, status, callback) {
+        return GetCommercialInformations(document, status, callback)
+    },
+    GetPhoneNumber: function (partnerCode, callback) {
         return GetPhoneNumber(partnerCode, callback)
     },
     GetSalesInfo: function (year, quarter, callback) {
         return (GetSalesInfo(year, quarter, callback))
     },
-    PostSalesOrder: function (item, qty, item2, callback){
+    PostSalesOrder: function (item, qty, item2, callback) {
         return (PostSalesOrder(item, qty, item2, callback))
     }
 }
@@ -31,49 +34,49 @@ function ServiceLayerRequest(isReport, method, endpoint, body, callback) {
 
 
     getCookiesCache().then(function (cookies) {
-            var options = {
-                    url: process.env.B1_HOST + ":" + process.env.B1_PORT 
-                        + (isReport ? process.env.B1_REPORTAPI : process.env.B1_DATAAPI) 
-                        + endpoint + "&$format=json",
-                    
-                    method: method,
-                    headers: {Cookie: cookies},
-                    body: body ? JSON.stringify(body) : null
-            }
-            console.log("Preparing Service Layer Request: " + JSON.stringify(options.method) + " - " + JSON.stringify(options.url))
+        var options = {
+            url: process.env.B1_HOST + ":" + process.env.B1_PORT
+            + (isReport ? process.env.B1_REPORTAPI : process.env.B1_DATAAPI)
+            + endpoint + "&$format=json",
 
-            console.log("REQUEST BODY: "+ JSON.stringify(options.body))
+            method: method,
+            headers: {Cookie: cookies},
+            body: body ? JSON.stringify(body) : null
+        }
+        console.log("Preparing Service Layer Request: " + JSON.stringify(options.method) + " - " + JSON.stringify(options.url))
 
-            request(options, function (error, response, body) {
-                if (error) {
-                    console.error(error.message)
+        console.log("REQUEST BODY: " + JSON.stringify(options.body))
+
+        request(options, function (error, response, body) {
+            if (error) {
+                console.error(error.message)
+            } else {
+                if (response.statusCode == 401) {
+                    //Invalid Session
+                    Connect().then(function () {
+                        ServiceLayerRequest(isReport, method, endpoint, body, callback)
+                    }).catch(function (error, response) {
+                        callback(error, response)
+                    })
+                    console.log("Request response with status: " + response.statusCode +
+                        "\nRequest headers: " + JSON.stringify(response.headers))
                 } else {
-                    if (response.statusCode == 401) {
-                        //Invalid Session
-                        Connect().then(function () {
-                            ServiceLayerRequest(isReport, method, endpoint, body, callback)
-                        }).catch(function (error, response) {
-                            callback(error, response)
-                        })
-                        console.log("Request response with status: " + response.statusCode +
-                            "\nRequest headers: " + JSON.stringify(response.headers))
-                    }else{
-                        //Not Succesfull & no HTTP Error message
-                        if ((response.statusCode < 200 || response.statusCode > 299) && !error){
-                            // Business error is on body
-                            body = JSON.parse(body)
-                            if(body.hasOwnProperty('error')){
-                                error = body.error.message.value
-                            } else{
-                                error = "Error "+ response.statusCode + " "+ response.statusMessage
-                            }
+                    //Not Succesfull & no HTTP Error message
+                    if ((response.statusCode < 200 || response.statusCode > 299) && !error) {
+                        // Business error is on body
+                        body = JSON.parse(body)
+                        if (body.hasOwnProperty('error')) {
+                            error = body.error.message.value
+                        } else {
+                            error = "Error " + response.statusCode + " " + response.statusMessage
                         }
                     }
-
                 }
-                callback(error, response, body);
-            });
-        })
+
+            }
+            callback(error, response, body);
+        });
+    })
         .catch(function () {
             Connect().then(function () {
                 ServiceLayerRequest(isReport, method, endpoint, body, callback)
@@ -82,7 +85,6 @@ function ServiceLayerRequest(isReport, method, endpoint, body, callback) {
             })
         })
 }
-
 
 
 let Connect = function () {
@@ -142,7 +144,6 @@ function GetSalesInfo(year, quarter, callback) {
     oDataEndpoint = oDataEndpoint.replace(/ /g, "%20");
 
 
-
     ServiceLayerRequest(true, "GET", oDataEndpoint, null, function (error, response, body) {
         if (!error && response.statusCode == 200) {
             body = JSON.parse(body);
@@ -152,6 +153,7 @@ function GetSalesInfo(year, quarter, callback) {
         }
     });
 }
+
 function GetPhoneNumber(cardCode, callback) {
     console.log("GetPhoneNumber SL Function::");
     console.log(cardCode);
@@ -160,7 +162,7 @@ function GetPhoneNumber(cardCode, callback) {
     let oDataEndpoint = "/BusinessPartners"
 
     // Set Odata query
-    oDataEndpoint += "('"+cardCode+"')?$select=Phone1"
+    oDataEndpoint += "('" + cardCode + "')?$select=Phone1"
 
     // Remove blank spaces
     oDataEndpoint = oDataEndpoint.replace(/ /g, "%20");
@@ -174,6 +176,77 @@ function GetPhoneNumber(cardCode, callback) {
         }
     });
 }
+
+function GetCommercialInformations(docType, status, callback) {
+    let oDataEndpoint = ""
+    if (docType == 'order') {
+        oDataEndpoint = "/Orders"
+    } else if (docType == 'invoice') {
+        oDataEndpoint = "/Invoices"
+    } else if (docType == "quotation") {
+        oDataEndpoint = "/Quotations"
+    } else if (docType == "deliverynote") {
+        oDataEndpoint = "/DeliveryNotes"
+    }
+
+    // Set Odata query
+    oDataEndpoint += "?$select=DocTotal"
+    if (status != null) {
+        let apiStatus = "O"
+        if (status == "open") {
+            apiStatus = "O"
+            oDataEndpoint += `&$filter=DocumentStatus eq '${apiStatus}'`
+        } else if (status == "close") {
+            apiStatus = "C"
+            oDataEndpoint += `&$filter=DocumentStatus eq '${apiStatus}'`
+        } else if (status == "topay") {
+            oDataEndpoint = "/$crossjoin(Invoices, IncomingPayments/PaymentInvoices)?$expand=Invoices($select=DocEntry, DocTotal), IncomingPayments/PaymentInvoices($select=DocEntry, SumApplied)&$filter=Invoices/DocEntry eq IncomingPayments/PaymentInvoices/DocEntry"
+            ServiceLayerRequest(false, "GET", oDataEndpoint, null, function (error, response, body) {
+                if (!error && response.statusCode == 200) {
+                    body = JSON.parse(body);
+                    let response = body.value;
+                    let encaissed = response.map((val) => Object.assign(val["Invoices"], val["IncomingPayments/PaymentInvoices"]));
+                    if (encaissed.length > 0) {
+                        oDataEndpoint = "/Invoices?$select=DocTotal&$filter="
+                        encaissed.forEach((value, key, array) => {
+                            oDataEndpoint += "DocEntry ne " + value
+                            if (key != array.length - 1) {
+                                oDataEndpoint += " and "
+                            }
+                        });
+                    } else {
+                        oDataEndpoint = "/Invoices?$select=DocTotal"
+
+                    }
+                    ServiceLayerRequest(false, "GET", oDataEndpoint, null, function (error, response, body) {
+                        if (!error && response.statusCode == 200) {
+                            body = JSON.parse(body);
+                            callback(null, body);
+                        } else {
+                            callback(error);
+                        }
+                    })
+                } else {
+                    callback(error);
+                }
+            });
+        }
+    }
+
+    // Remove blank spaces
+    oDataEndpoint = oDataEndpoint.replace(/ /g, "%20");
+    if (status != "topay") {
+        ServiceLayerRequest(false, "GET", oDataEndpoint, null, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                body = JSON.parse(body);
+                callback(null, body);
+            } else {
+                callback(error);
+            }
+        });
+    }
+}
+
 function PostSalesOrder(item, qty, item2, callback) {
 
 
@@ -243,7 +316,6 @@ function setSLSessionTimeout(timeout) {
 function updateSLSessionTimeout() {
     SLEXPIRE = moment(moment.now()).add(SLTIMEOUT, 'minutes').format()
 }
-
 
 
 // --------------- Helper for OData Queries -----------------------

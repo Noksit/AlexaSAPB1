@@ -5,7 +5,9 @@
       "intents": [
         {
           "name": "AMAZON.CancelIntent",
-          "samples": []
+          "samples": [
+            "annule"
+          ]
         },
         {
           "name": "AMAZON.HelpIntent",
@@ -13,7 +15,9 @@
         },
         {
           "name": "AMAZON.StopIntent",
-          "samples": []
+          "samples": [
+            "stop"
+          ]
         },
         {
           "name": "SayHello",
@@ -26,43 +30,6 @@
           "samples": [
             "Salue notre ami {FirstName}",
             "Dit bonjour a {FirstName}"
-          ]
-        },
-        {
-          "name": "MakePurchase",
-          "slots": [
-            {
-              "name": "ItemName",
-              "type": "SAP_ITEMS"
-            },
-            {
-              "name": "Quantity",
-              "type": "AMAZON.NUMBER"
-            },
-            {
-              "name": "ItemRecom",
-              "type": "SAP_ITEMS"
-            }
-          ],
-          "samples": [
-            "j'ai besoin de fournitures",
-            "achete moi des fournitures",
-            "donne moi des fournitures",
-            "je dois acheter des trucs",
-            "achat",
-            "je dois passer commander",
-            "{ItemName}",
-            "achete moi {ItemName}",
-            "achete moi {Quantity} unité de {ItemName}",
-            "achete {Quantity}  {ItemName}",
-            "{Quantity} unités",
-            "{Quantity}",
-            "{Quantity} pack",
-            "{Quantity} packs",
-            "prend moi aussi {ItemRecom}",
-            "{ItemRecom} sera tres bien",
-            "tu peux ajouter {ItemRecom} a cette commande",
-            "{ItemRecom} et ce sera bon"
           ]
         },
         {
@@ -87,16 +54,45 @@
           ]
         },
         {
+          "name": "GetCommercialInformation",
+          "slots": [
+            {
+              "name": "Document",
+              "type": "SAP_DOCUMENT"
+            },
+            {
+              "name": "Status",
+              "type": "SAP_STATUS"
+            }
+          ],
+          "samples": [
+            "donne moi le nombre de {Document} {Status}",
+            "quels est le nombre de {Document} {Status} ",
+            "combien y a t'il de {Document} {Status} ",
+            "combien de {Document} {Status}"
+          ]
+        },
+        {
           "name": "AMAZON.NavigateHomeIntent",
           "samples": []
         },
         {
           "name": "AMAZON.YesIntent",
-          "samples": []
+          "samples": [
+            "sil te plait",
+            "yes",
+            "yup",
+            "oui"
+          ]
         },
         {
           "name": "AMAZON.NoIntent",
-          "samples": []
+          "samples": [
+            "nope",
+            "non merci",
+            "non",
+            "No"
+          ]
         }
       ],
       "types": [
@@ -140,6 +136,75 @@
                 "synonyms": [
                   "eco T.M.",
                   "gazelle"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SAP_STATUS",
+          "values": [
+            {
+              "id": "open",
+              "name": {
+                "value": "ouvert",
+                "synonyms": [
+                  "en cours",
+                  "pas fermé",
+                  "non cloturé"
+                ]
+              }
+            },
+            {
+              "id": "close",
+              "name": {
+                "value": "fermé",
+                "synonyms": [
+                  "cloturé"
+                ]
+              }
+            },
+            {
+              "id": "topay",
+              "name": {
+                "value": "a encaisser",
+                "synonyms": [
+                  "non payé"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "SAP_DOCUMENT",
+          "values": [
+            {
+              "id": "invoice",
+              "name": {
+                "value": "facture"
+              }
+            },
+            {
+              "id": "quotation",
+              "name": {
+                "value": "devis"
+              }
+            },
+            {
+              "id": "order",
+              "name": {
+                "value": "commande",
+                "synonyms": [
+                  "bon de commmande"
+                ]
+              }
+            },
+            {
+              "id": "deliverynote",
+              "name": {
+                "value": "bon de livraison",
+                "synonyms": [
+                  "livraison"
                 ]
               }
             }
@@ -271,6 +336,45 @@
           ]
         }
       ]
-    }
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "GetCommercialInformation",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "Document",
+              "type": "SAP_DOCUMENT",
+              "confirmationRequired": false,
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.388239107944.427455596753"
+              }
+            },
+            {
+              "name": "Status",
+              "type": "SAP_STATUS",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "ALWAYS"
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.388239107944.427455596753",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "de quel type de document souhaitez vous connaitre les informations"
+          }
+        ]
+      }
+    ]
   }
 }

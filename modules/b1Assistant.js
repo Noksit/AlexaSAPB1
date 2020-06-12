@@ -65,7 +65,7 @@ function onIntent(intentRequest, session, callback) {
 
     console.log(intentRequest);
     let intent = intentRequest.intent;
-    intentName = extractValue('PreviousIntent', intent, session);
+    intentName = extractIDelseValue('PreviousIntent', intent, session);
 
     console.log('CURRENT Intent is ' + intent.name);
     console.log('PREVIOUS intent was ' + intentName);
@@ -101,6 +101,10 @@ function onIntent(intentRequest, session, callback) {
 
         case "GetPhoneNumber":
             getPhoneNumber(intent, session, callback);
+            break;
+
+        case "GetCommercialInformation":
+            GetCommercialInformation(intent, session, callback);
             break;
 
         default:
@@ -169,8 +173,8 @@ function getSalesInfo(intent, session, callback) {
     let shouldEndSession = false;
     let speechOutput = "";
 
-    let SalesQuarter = extractValue('SalesQuarter', intent, session)
-    let SalesYear = extractValue('SalesYear', intent, session)
+    let SalesQuarter = extractIDelseValue('SalesQuarter', intent, session)
+    let SalesYear = extractIDelseValue('SalesYear', intent, session)
 
     sessionAttributes = handleSessionAttributes(sessionAttributes, 'SalesQuarter', SalesQuarter);
     sessionAttributes = handleSessionAttributes(sessionAttributes, 'SalesYear', SalesYear);
@@ -240,7 +244,7 @@ function getPhoneNumber(intent, session, callback) {
     let shouldEndSession = false;
     let speechOutput = "";
 
-    let Partner = extractValue('Partner', intent, session)
+    let Partner = extractIDelseValue('Partner', intent, session)
     sessionAttributes = handleSessionAttributes(sessionAttributes, 'Partner', Partner);
     if (Partner == null) {
         speechOutput = "De quel client ?";
@@ -249,7 +253,7 @@ function getPhoneNumber(intent, session, callback) {
         console.log("Lets go get PhoneNumber");
         B1SL.GetPhoneNumber(Partner, function (err, response) {
             if (err) {
-                console.error(error)
+                console.error(err)
                 speechOutput = "Il y a un probleme avec le Service Layer. Please check logs"
             } else {
 
@@ -258,6 +262,66 @@ function getPhoneNumber(intent, session, callback) {
                 } else {
                     let phone = formatPhoneNumber(response.Phone1)
                     speechOutput = "Le numéro de téléphone est " + phone;
+                }
+            }
+
+            shouldEndSession = true;
+
+            // callback with result
+            callback(sessionAttributes,
+                buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession)
+            );
+        });
+        return;
+    }
+
+    sessionAttributes = handleSessionAttributes(sessionAttributes, 'PreviousIntent', intent.name);
+
+
+    // Call back while there still questions to ask
+    callback(sessionAttributes,
+        buildSpeechletResponse(
+            intent.name, speechOutput,
+            repromptText, shouldEndSession
+        )
+    );
+}
+
+function GetCommercialInformation(intent, session, callback) {
+    let repromptText = null;
+    let sessionAttributes = {};
+    let shouldEndSession = false;
+    let speechOutput = "";
+
+    let document = extractIDelseValue('Document', intent, session)
+    let status = extractIDelseValue('Status', intent, session)
+    let documentTypeSaid = extractValue('Document', intent, session)
+    sessionAttributes = handleSessionAttributes(sessionAttributes, 'Partner', document);
+    sessionAttributes = handleSessionAttributes(sessionAttributes, 'Status', status);
+
+    if (document == null) {
+        speechOutput = "de quel type de document ?";
+        repromptText = "des factures, commande, devis ?";
+    } else {
+        console.log("Lets go get Commercial Information");
+        B1SL.GetCommercialInformations(document, status, function (err, response) {
+            if (err) {
+                console.error(err)
+                speechOutput = "Il y a un probleme avec le Service Layer."
+            } else {
+                let resp = response.value;
+                let count = resp.length
+                let amount = 0;
+                resp.forEach((resp) => {
+                    amount += parseFloat(resp.DocTotal)
+                })
+                if (status == "topay") {
+                    speechOutput = `Il y a ${count} ${documentTypeSaid} non encaissé.`
+                    if (count == 0) {
+                        speechOutput = `Il n'y a aucun ${documentTypeSaid} non encaissé. Beau boulot`
+                    }
+                } else {
+                    speechOutput = `Actuellement, il y a ${count} ${documentTypeSaid} pour un montant de ${amount} euros.`;
                 }
             }
 
@@ -294,9 +358,9 @@ function postPurchase(intent, session, callback) {
 
     //Define Variables from Intent or from Session Attributes
 
-    let ItemName = extractValue('ItemName', intent, session)
-    let Quantity = extractValue('Quantity', intent, session)
-    let ItemRecom = extractValue('ItemRecom', intent, session)
+    let ItemName = extractIDelseValue('ItemName', intent, session)
+    let Quantity = extractIDelseValue('Quantity', intent, session)
+    let ItemRecom = extractIDelseValue('ItemRecom', intent, session)
 
     let ItemRecomName = null;
     let params = null;
@@ -307,7 +371,7 @@ function postPurchase(intent, session, callback) {
 
     // Answer to: Do you need anything else?
     if (intent.name == "AMAZON.YesIntent") {
-        ItemRecom = extractValue('ItemRecom', intent, session)
+        ItemRecom = extractIDelseValue('ItemRecom', intent, session)
     } else if (intent.name == "AMAZON.NoIntent") {
         ItemRecom = null;
     } else {
@@ -362,7 +426,7 @@ function postPurchase(intent, session, callback) {
 
 
 // --------------- Handle of Session Attributes -----------------------
-function extractValue(attr, intent, session) {
+function extractIDelseValue(attr, intent, session) {
     if (session.attributes) {
         if (attr in session.attributes) {
             console.log("Session attribute " + attr + " is " + session.attributes[attr]);
@@ -380,6 +444,23 @@ function extractValue(attr, intent, session) {
             } catch (e) {
                 return intent.slots[attr].value;
             }
+        }
+    }
+    return null;
+}
+
+function extractValue(attr, intent, session) {
+    if (session.attributes) {
+        if (attr in session.attributes) {
+            console.log("Session attribute " + attr + " is " + session.attributes[attr]);
+            return session.attributes[attr];
+        }
+    }
+
+    console.log("No session attribute for " + attr);
+    if (intent.slots) {
+        if (attr in intent.slots && 'value' in intent.slots[attr]) {
+            return intent.slots[attr].value;
         }
     }
     return null;
